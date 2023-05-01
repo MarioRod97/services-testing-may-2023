@@ -12,4 +12,15 @@ public class Account
     {
         return _balance; // "Slimed" means fake, can't stay - Gary Bernhardt
     }
+
+    public void Withdraw(decimal amountToWithdraw)
+    {
+        if (amountToWithdraw <= _balance)
+        {
+            _balance -= amountToWithdraw;
+        } else
+        {
+            throw new AccountOverdraftException();
+        }
+    }
 }
