@@ -23,20 +23,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.MapGet("/demo2", (ISystemClock clock) =>
+app.MapGet("/demo", (ISystemClock clock) =>
 {
     var currentTime = clock.GetCurrent();
     var response = new DemoResponse
     {
-        Message = "Hello from the other side!",
+        Message = "Hello from the Api!",
         CreatedAt = currentTime,
         GettingCloseToQuittingTime = currentTime.Hour >= 16
     };
     return Results.Ok(response);
 });
+
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ProductsApi.Demo;
 using ProductsApi.Adapters;
+using Moq;
 
 namespace ProductsApi.IntegrationTests.Demo;
 
@@ -21,7 +22,10 @@ public class GetTests
         {
             options.ConfigureServices((context, sp) =>
             {
-                sp.AddSingleton<ISystemClock, FakeTestingClockAfterCutoff>();
+                var fakeClock = new Mock<ISystemClock>();
+                fakeClock.Setup(x => x.GetCurrent()).Returns(expectedResponse.CreatedAt);
+
+                sp.AddSingleton<ISystemClock>(p => fakeClock.Object);
             });
         });
 
@@ -53,7 +57,10 @@ public class GetTests
         {
             options.ConfigureServices((context, sp) =>
             {
-                sp.AddSingleton<ISystemClock, FakeTestingClockBeforeCutoff>();
+                var fakeClock = new Mock<ISystemClock>();
+                fakeClock.Setup(x => x.GetCurrent()).Returns(expectedResponse.CreatedAt);
+
+                sp.AddSingleton<ISystemClock>(p => fakeClock.Object);
             });
         });
 
