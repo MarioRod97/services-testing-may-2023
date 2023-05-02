@@ -1,5 +1,6 @@
 using ProductsApi.Adapters;
 using ProductsApi.Demo;
+using ProductsApi.Products;
 
 // CreateBuilder adds the "standard" good defaults for EVERYTHING
 
@@ -13,6 +14,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 // 
 builder.Services.AddSingleton<ISystemClock, SystemClock>();
+builder.Services.AddScoped<IManageProductCatalogue, ProductManager>();
+builder.Services.AddScoped<IGenerateSlugs, SlugGenerator>();
 
 var app = builder.Build();
 
