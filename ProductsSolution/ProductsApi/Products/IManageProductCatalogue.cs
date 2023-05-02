@@ -3,4 +3,5 @@
 public interface IManageProductCatalogue
 {
     Task<CreateProductResponse> AddProductAsync(CreateProductRequest request);
+    Task<CreateProductResponse?> GetProductAsync(string slug);
 }

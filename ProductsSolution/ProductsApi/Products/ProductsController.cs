@@ -16,6 +16,20 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<CreateProductResponse>> AddProduct([FromBody] CreateProductRequest request)
     {
         CreateProductResponse response = await _productCatalogue.AddProductAsync(request);
-        return StatusCode(201, response);
+        return CreatedAtAction(nameof(ProductsController.GetProductBySlug), new { slug = response.Slug }, response);
+    }
+
+    [HttpGet("/products/{slug}")]
+    public async Task<ActionResult<CreateProductResponse>> GetProductBySlug(string slug)
+    {
+        CreateProductResponse? response = await _productCatalogue.GetProductAsync(slug);
+
+        if(response == null)
+        {
+            return NotFound();
+        } else
+        {
+            return Ok(response);
+        }
     }
 }

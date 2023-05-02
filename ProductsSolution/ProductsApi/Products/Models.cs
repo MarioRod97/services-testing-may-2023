@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Marten.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace ProductsApi.Products;
 
@@ -18,6 +19,7 @@ public record SupplierInformation
 
 public record CreateProductResponse
 {
+    [Identity]
     public string Slug { get; init; } = string.Empty;
     public ProductPricingInformation Pricing { get; init; } = new();
 }
