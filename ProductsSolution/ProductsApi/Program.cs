@@ -15,7 +15,11 @@ builder.Services.AddSwaggerGen();
 // 
 builder.Services.AddSingleton<ISystemClock, SystemClock>();
 builder.Services.AddScoped<IManageProductCatalogue, ProductManager>();
-builder.Services.AddScoped<IGenerateSlugs, SlugGenerator>();
+if(builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IGenerateSlugs, SlugGenerator>();
+    builder.Services.AddScoped<ICheckForUniqueValues, ProductSlugUniquenessChecker>();
+}
 
 var app = builder.Build();
 
