@@ -14,8 +14,7 @@ public class PricingManager : IManagePricing
     public async Task<ProductPricingInformation> GetPricingInformationForAsync(CreateProductRequest product)
     {
         var info = await _adapter.GetThePricingInformationAsync(product.Supplier.Id, product.Supplier.SKU);
-
-        if(info is not null)
+        if (info is not null)
         {
             var response = new ProductPricingInformation
             {
@@ -23,10 +22,9 @@ public class PricingManager : IManagePricing
                 Wholesale = new ProductPricingWholeInformation
                 {
                     Wholesale = PricingCalculations.CalculateWholesalePrice(product, info),
-                    MinimumPurchaseRequired = PricingCalculations.CalculateMinimumPurchaseIsRequired(product)
+                    MinimumPurchaseRequired = PricingCalculations.CalculateMinimumPurchaseQty(product)
                 }
             };
-
             return response;
         }
         else
@@ -34,11 +32,14 @@ public class PricingManager : IManagePricing
             throw new Exception("Blammo");
         }
     }
+
+
 }
+
 
 public static class PricingCalculations
 {
-    public static int CalculateMinimumPurchaseIsRequired(CreateProductRequest product)
+    public static int CalculateMinimumPurchaseQty(CreateProductRequest product)
     {
         return product.Cost < 10 ? 10 : 5;
     }

@@ -26,7 +26,7 @@ public class ProductsDatabaseFixture : IAsyncLifetime
             .WithDatabase("products_dev")
             .WithUsername("user")
             .WithPassword("password")
-            // .WithPortBinding(5432, 5432)
+            //.WithPortBinding(5432, 5432) // Don't do this because you'll have multiple running.
             .WithImage(PG_IMAGE)
             .Build();
     }
@@ -34,9 +34,7 @@ public class ProductsDatabaseFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         MockServer = WireMockServer.Start(1338);
-        
         await _pgContainer.StartAsync();
-
         AlbaHost = await Alba.AlbaHost.For<Program>(builder =>
         {
             builder.ConfigureServices(services =>
@@ -53,13 +51,13 @@ public class ProductsDatabaseFixture : IAsyncLifetime
 
     protected virtual void ConfigureAdditionalServices(IServiceCollection services)
     {
-        // to do
+        //
     }
 
     public async Task DisposeAsync()
     {
         MockServer.Stop();
         await AlbaHost.DisposeAsync();
-        await _pgContainer.DisposeAsync();
+        await _pgContainer.DisposeAsync().AsTask();
     }
 }

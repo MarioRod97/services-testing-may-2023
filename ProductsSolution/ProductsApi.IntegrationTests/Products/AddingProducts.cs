@@ -11,20 +11,20 @@ using WireMock.Server;
 
 namespace ProductsApi.IntegrationTests.Products;
 
-// Note: There is also a "ICollectionFixture"
+// Note: There is also a "ICollectionFixture" 
 public class AddingProducts : IClassFixture<ProductsDatabaseFixture>
 {
     private readonly IAlbaHost _host;
-    private readonly WireMockServer _wireMockServer = null!;
-
+    private readonly WireMockServer _mockServer;
     public AddingProducts(ProductsDatabaseFixture fixture)
     {
         _host = fixture.AlbaHost;
+        _mockServer = fixture.MockServer;
     }
-    
     [Fact]
     public async Task CreatingAProduct()
     {
+
         var request = new CreateProductRequest
         {
             Name = "Super Deluxe Dandruff Shampoo",
@@ -44,25 +44,31 @@ public class AddingProducts : IClassFixture<ProductsDatabaseFixture>
                 Retail = 42.23M,
                 Wholesale = new ProductPricingWholeInformation
                 {
-                    Wholesale = 40.23M,
-                    MinimumPurchaseRequired = 10
+                    Wholesale = 32.04M,
+                    MinimumPurchaseRequired = 5
+
                 }
             }
+
         };
 
-        _wireMockServer.Given(Request.Create().WithPath($"suppliers/{request.Supplier.Id}/products/{request.Supplier.SKU}"))
-            .RespondWith(Response.Create().WithStatusCode(200)
-            .WithBodyAsJson(new SupplierPricingInformationResponse
-            {
-                AllowWholesale = true,
-                RequiredMsrp = 42.23M
-            }));
+        _mockServer.Given(Request.Create().WithPath($"/suppliers/{request.Supplier.Id}/products/{request.Supplier.SKU}"))
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithBodyAsJson(new SupplierPricingInformationResponse
+                {
+                    AllowWholesale = true,
+                    RequiredMsrp = 42.23M
+                }
+            ));
+
 
         var response = await _host.Scenario(api =>
         {
             api.Post.Json(request).ToUrl("/products");
             api.StatusCodeShouldBe(201);
-            api.Header("location").SingleValueShouldMatch(new System.Text.RegularExpressions.Regex("http://localhost/" + expectedResponse.Slug));
+            api.Header("location")
+            .SingleValueShouldMatch(new System.Text.RegularExpressions.Regex("http://localhost/products/" + expectedResponse.Slug));
         });
 
         var actualResponse = response.ReadAsJson<CreateProductResponse>();
@@ -74,30 +80,32 @@ public class AddingProducts : IClassFixture<ProductsDatabaseFixture>
         //mockedDocumentSession.Verify(s => s.Insert(It.IsAny<CreateProductResponse>()), Times.Once);
         //mockedDocumentSession.Verify(s => s.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(1));
 
-        var savedResponse = await _host.Scenario(api =>
+        var savedResonse = await _host.Scenario(api =>
         {
             api.Get.Url("/products/" + actualResponse.Slug);
             api.StatusCodeShouldBeOk(); // 200
         });
-
-        var lookukpResponseProduct = savedResponse.ReadAsJson<CreateProductResponse>();
-
-        Assert.Equal(expectedResponse, actualResponse);
+        var lookupResponseProduct = savedResonse.ReadAsJson<CreateProductResponse>();
+        Assert.Equal(expectedResponse, lookupResponseProduct);
     }
 }
+
 
 public class AddingProductsFixture : ProductsDatabaseFixture
 {
     protected override void ConfigureAdditionalServices(IServiceCollection services)
     {
+        //            Id = "bobs-shop",
+        // SKU = "19891"
         var stubbedResponse = new SupplierPricingInformationResponse
         {
             AllowWholesale = false,
             RequiredMsrp = 42.23M
+
         };
-        
         var stubbedProductsApiAdapter = new Mock<PricingApiAdapter>(null);
-        stubbedProductsApiAdapter.Setup(a => a.GetThePricingInformationAsync("bobs-shop", "19891")).ReturnsAsync(stubbedResponse);
+        stubbedProductsApiAdapter.Setup(a => a.GetThePricingInformationAsync("bobs-shop", "19891"))
+            .ReturnsAsync(stubbedResponse);
 
         services.AddScoped<PricingApiAdapter>(sp => stubbedProductsApiAdapter.Object);
     }
