@@ -2,8 +2,12 @@
 using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using ProductsApi.Adapters;
 using ProductsApi.IntegrationTests.Products.Fixtures;
 using ProductsApi.Products;
+using WireMock.RequestBuilders;
+using WireMock.ResponseBuilders;
+using WireMock.Server;
 
 namespace ProductsApi.IntegrationTests.Products;
 
@@ -11,6 +15,7 @@ namespace ProductsApi.IntegrationTests.Products;
 public class AddingProducts : IClassFixture<ProductsDatabaseFixture>
 {
     private readonly IAlbaHost _host;
+    private readonly WireMockServer _wireMockServer = null!;
 
     public AddingProducts(ProductsDatabaseFixture fixture)
     {
@@ -23,7 +28,7 @@ public class AddingProducts : IClassFixture<ProductsDatabaseFixture>
         var request = new CreateProductRequest
         {
             Name = "Super Deluxe Dandruff Shampoo",
-            Cost = 120.88M,
+            Cost = 18,
             Supplier = new SupplierInformation
             {
                 Id = "bobs-shop",
@@ -44,6 +49,14 @@ public class AddingProducts : IClassFixture<ProductsDatabaseFixture>
                 }
             }
         };
+
+        _wireMockServer.Given(Request.Create().WithPath($"suppliers/{request.Supplier.Id}/products/{request.Supplier.SKU}"))
+            .RespondWith(Response.Create().WithStatusCode(200)
+            .WithBodyAsJson(new SupplierPricingInformationResponse
+            {
+                AllowWholesale = true,
+                RequiredMsrp = 42.23M
+            }));
 
         var response = await _host.Scenario(api =>
         {
@@ -70,5 +83,22 @@ public class AddingProducts : IClassFixture<ProductsDatabaseFixture>
         var lookukpResponseProduct = savedResponse.ReadAsJson<CreateProductResponse>();
 
         Assert.Equal(expectedResponse, actualResponse);
+    }
+}
+
+public class AddingProductsFixture : ProductsDatabaseFixture
+{
+    protected override void ConfigureAdditionalServices(IServiceCollection services)
+    {
+        var stubbedResponse = new SupplierPricingInformationResponse
+        {
+            AllowWholesale = false,
+            RequiredMsrp = 42.23M
+        };
+        
+        var stubbedProductsApiAdapter = new Mock<PricingApiAdapter>(null);
+        stubbedProductsApiAdapter.Setup(a => a.GetThePricingInformationAsync("bobs-shop", "19891")).ReturnsAsync(stubbedResponse);
+
+        services.AddScoped<PricingApiAdapter>(sp => stubbedProductsApiAdapter.Object);
     }
 }
