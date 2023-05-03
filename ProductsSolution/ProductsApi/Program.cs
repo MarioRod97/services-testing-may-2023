@@ -10,13 +10,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-// 
-builder.Services.AddSingleton<ISystemClock, SystemClock>();
+
+// 198 services
+builder.Services.AddSingleton<ISystemClock, SystemClock>(); // + 1
 builder.Services.AddScoped<IManageProductCatalogue, ProductManager>();
-if(builder.Environment.IsDevelopment())
+
+if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<IGenerateSlugs, SlugGenerator>();
     builder.Services.AddScoped<ICheckForUniqueValues, ProductSlugUniquenessChecker>();
@@ -27,7 +30,6 @@ var productsConnectionString = builder.Configuration.GetConnectionString("produc
 builder.Services.AddMarten(options =>
 {
     options.Connection(productsConnectionString);
-    
     if (builder.Environment.IsDevelopment())
     {
         options.AutoCreateSchemaObjects = Weasel.Core.AutoCreate.All;
@@ -46,12 +48,14 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/demo", (ISystemClock clock) =>
 {
     var currentTime = clock.GetCurrent();
+    
     var response = new DemoResponse
     {
-        Message = "Hello from the Api!",
+        Message = "Hello from the other side!",
         CreatedAt = currentTime,
         GettingCloseToQuittingTime = currentTime.Hour >= 16
     };
+    
     return Results.Ok(response);
 });
 

@@ -20,7 +20,6 @@ public class SlugGenerator : IGenerateSlugs
 
         var slugger = new Slugify.SlugHelper(config);
         var attempt = slugger.GenerateSlug(name);
-
         bool isUnique = await _uniquenessChecker.IsUniqueAsync(attempt);
 
         if (isUnique)
@@ -31,22 +30,21 @@ public class SlugGenerator : IGenerateSlugs
         {
             var letters = "abcdefghijklmnopqrstuvwxyz";
             var idx = 0;
-
-            while(idx < letters.Length)
+            while (idx < letters.Length)
             {
                 var retryAttempt = attempt + "-" + letters[idx];
                 isUnique = await _uniquenessChecker.IsUniqueAsync(retryAttempt);
-
-                if(isUnique)
+                if (isUnique)
                 {
                     return retryAttempt;
-                } else
+                }
+                else
                 {
                     idx++;
                 }
             }
-
-            return attempt + Guid.NewGuid().ToString(); //discovered this.
+            
+            return attempt + Guid.NewGuid().ToString(); // discovered this.
         }
     }
 }

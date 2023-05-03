@@ -13,7 +13,7 @@ public class GetTests
     {
         var expectedResponse = new DemoResponse
         {
-            Message = "Hello from the Api!",
+            Message = "Hello from the other side!",
             CreatedAt = new DateTimeOffset(new DateTime(1969, 4, 20, 23, 59, 00), TimeSpan.FromHours(-4)),
             GettingCloseToQuittingTime = true
         };
@@ -24,7 +24,6 @@ public class GetTests
             {
                 var fakeClock = new Mock<ISystemClock>();
                 fakeClock.Setup(x => x.GetCurrent()).Returns(expectedResponse.CreatedAt);
-
                 sp.AddSingleton<ISystemClock>(p => fakeClock.Object);
             });
         });
@@ -48,7 +47,7 @@ public class GetTests
     {
         var expectedResponse = new DemoResponse
         {
-            Message = "Hello from the Api!",
+            Message = "Hello from the other side!",
             CreatedAt = new DateTimeOffset(new DateTime(1969, 4, 20, 13, 59, 00), TimeSpan.FromHours(-4)),
             GettingCloseToQuittingTime = false
         };
@@ -59,7 +58,6 @@ public class GetTests
             {
                 var fakeClock = new Mock<ISystemClock>();
                 fakeClock.Setup(x => x.GetCurrent()).Returns(expectedResponse.CreatedAt);
-
                 sp.AddSingleton<ISystemClock>(p => fakeClock.Object);
             });
         });

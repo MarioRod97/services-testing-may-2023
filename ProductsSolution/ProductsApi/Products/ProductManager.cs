@@ -23,7 +23,7 @@ public class ProductManager : IManageProductCatalogue
                 Retail = 42.23M,
                 Wholesale = new ProductPricingWholeInformation
                 {
-                    WholeSale = 40.23M,
+                    Wholesale = 40.23M,
                     MinimumPurchaseRequired = 10
                 }
             }
@@ -31,7 +31,6 @@ public class ProductManager : IManageProductCatalogue
 
         _session.Insert(response);
         await _session.SaveChangesAsync();
-
         return response;
     }
 

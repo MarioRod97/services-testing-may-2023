@@ -12,7 +12,6 @@ public class AddingProducts
     public async Task CreatingAProduct()
     {
         var mockedDocumentSession = new Mock<IDocumentSession>();
-
         await using var host = await AlbaHost.For<Program>(options =>
         {
             options.ConfigureServices((context, sp) =>
@@ -21,13 +20,11 @@ public class AddingProducts
                 {
                     return mockedDocumentSession.Object;
                 });
-
                 sp.AddScoped<ICheckForUniqueValues>(sp =>
                 {
-                    var stubbedUniquenessChecker = new Mock<ICheckForUniqueValues>();
-                    stubbedUniquenessChecker.Setup(u => u.IsUniqueAsync(It.IsAny<string>())).ReturnsAsync(true);
-
-                    return stubbedUniquenessChecker.Object;
+                    var stubbedUniqueChecker = new Mock<ICheckForUniqueValues>();
+                    stubbedUniqueChecker.Setup(u => u.IsUniqueAsync(It.IsAny<string>())).ReturnsAsync(true);
+                    return stubbedUniqueChecker.Object;
                 });
             });
         });
@@ -51,7 +48,7 @@ public class AddingProducts
                 Retail = 42.23M,
                 Wholesale = new ProductPricingWholeInformation
                 {
-                    WholeSale = 40.23M,
+                    Wholesale = 40.23M,
                     MinimumPurchaseRequired = 10
                 }
             }
@@ -64,7 +61,6 @@ public class AddingProducts
         });
 
         var actualResponse = response.ReadAsJson<CreateProductResponse>();
-        
         Assert.NotNull(actualResponse);
 
         Assert.Equal(expectedResponse, actualResponse);
